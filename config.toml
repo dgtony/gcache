@@ -1,0 +1,43 @@
+
+[general]
+# debug/info/notice/warning/error/critical
+log_level = "debug"
+
+# short/long
+log_format = "long"
+
+# stdout/stderr
+log_out = "stderr"
+
+
+[storage]
+# number of internal shards
+shards = 2
+
+# interval between procedures of key expired, sec
+key_exp_check_interval = 30
+
+
+[replication]
+# restore cache from dump
+restore_from_file = false
+
+# dump cache to file 
+save_to_file = false
+
+# dump file path
+cache_file = "./cache_dump.dat"
+
+# period of cache dumping to the file, sec
+file_write_period = 30
+
+# for standalone and master: period of making internal cache snapshots, sec
+# for slave nodes: period of cache pulls from master node
+dump_update_period = 10
+
+# for master - interface to listen on, for slave - address of master node
+# address format: "<host>:<port>"
+master_addr = ":1324"
+
+# access key, must be similar on master and slaves
+master_secret = "supersecret"
