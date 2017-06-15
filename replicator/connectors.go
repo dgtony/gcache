@@ -37,13 +37,13 @@ type SlaveConn struct {
 // TODO implement link control and reconnect to master
 
 /*
-	// checkout receive message error
-	if err == io.EOF {
-		// todo set to offline and reconnect
+   // checkout receive message error
+   if err == io.EOF {
+       // todo set to offline and reconnect
 
-		logger("master conection lost")
-		c.ConnectMaster()
-	}
+       logger("master conection lost")
+       c.ConnectMaster()
+   }
 */
 
 // addr is a pair host:port
@@ -93,26 +93,26 @@ func (c *SlaveConn) ConnectMaster() {
 /*
 // previous version
 func (c *SlaveConn) ConnectMaster() {
-	go func() {
-		attempt := 1
-		for {
-			err := c.connect()
-			if err == nil {
+    go func() {
+        attempt := 1
+        for {
+            err := c.connect()
+            if err == nil {
 
-				// TODO replace with logger
-				fmt.Printf("connection to master node established, attempts: %d", attempt)
+                // TODO replace with logger
+                fmt.Printf("connection to master node established, attempts: %d", attempt)
 
-				break
-			}
-			// wait before reconnect
-			time.Sleep(backoff(attempt, c.ReconMaxWait))
-			attempt++
-		}
+                break
+            }
+            // wait before reconnect
+            time.Sleep(backoff(attempt, c.ReconMaxWait))
+            attempt++
+        }
 
-		// TODO send auth with MasterKey
-		// receive AUTH_OK
+        // TODO send auth with MasterKey
+        // receive AUTH_OK
 
-	}()
+    }()
 }
 */
 

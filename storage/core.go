@@ -167,42 +167,42 @@ func (c *ConcurrentMapShard) getShardKeys() []string {
 
 /*
 func BootstrapStorage(dumpFile string, master bool, numShards int) (ConcurrentMap, error) {
-	//
-	if master {
-		// TODO defer start slave-server
+    //
+    if master {
+        // TODO defer start slave-server
 
-		// TODO read file
-		snapshot := []byte{}
+        // TODO read file
+        snapshot := []byte{}
 
-		if len(snapshot) > 0 {
-			dump, err := decodeSnapshot(snapshot)
-			if err == nil {
-				return MakeStorageFromDump(dump)
-			}
-			// TODO write decode failure to log
-		}
-		// cannot restore data
-		return MakeStorageEmpty(numShards)
-	} else {
-		// slave
+        if len(snapshot) > 0 {
+            dump, err := decodeSnapshot(snapshot)
+            if err == nil {
+                return MakeStorageFromDump(dump)
+            }
+            // TODO write decode failure to log
+        }
+        // cannot restore data
+        return MakeStorageEmpty(numShards)
+    } else {
+        // slave
 
-	}
-	return nil
+    }
+    return nil
 }
 
 func readSnapshotFromFile(filename string) ([]byte, error) {
-	// TODO
-	return nil, nil
+    // TODO
+    return nil, nil
 }
 
 func readSnapshotFromMaster(addr string) ([]byte, error) {
-	// TODO
-	return nil, nil
+    // TODO
+    return nil, nil
 }
 
 func decodeSnapshot(snapshot []byte) (StorageDump, error) {
-	// TODO deserialize
+    // TODO deserialize
 
-	return StorageDump{}, nil
+    return StorageDump{}, nil
 }
 */

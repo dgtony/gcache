@@ -41,42 +41,42 @@ type ReplicationSettings struct {
 /*
 
 type StorageInfo struct {
-	NumShards          int    `toml:"shards"`
-	ContentServerAddr  string `toml:"content_addr"`
-	UserDeviceEndpoint string `toml:"user_device_endpoint"`
-	DeviceInfoEndpoint string `toml:"device_info_endpoint"`
-	DeviceInfoLifeTime int    `toml:"device_info_lifetime"`
-	SessionCleanPeriod int    `toml:"session_clean_period"`
-	SessionLifeTime    int    `toml:"session_lifetime"`
+    NumShards          int    `toml:"shards"`
+    ContentServerAddr  string `toml:"content_addr"`
+    UserDeviceEndpoint string `toml:"user_device_endpoint"`
+    DeviceInfoEndpoint string `toml:"device_info_endpoint"`
+    DeviceInfoLifeTime int    `toml:"device_info_lifetime"`
+    SessionCleanPeriod int    `toml:"session_clean_period"`
+    SessionLifeTime    int    `toml:"session_lifetime"`
 }
 
 type SwaggerInfo struct {
-	Expose bool   `toml:"expose"`
-	Route  string `toml:"route"`
-	File   string `toml:"file"`
+    Expose bool   `toml:"expose"`
+    Route  string `toml:"route"`
+    File   string `toml:"file"`
 }
 
 type HTTPInfo struct {
-	Addr        string `toml:"address"`
-	Port        int16  `toml:"port"`
-	RoutePrefix string `toml:"prefix"`
-	Timeout     int    `toml:"timeout"`
+    Addr        string `toml:"address"`
+    Port        int16  `toml:"port"`
+    RoutePrefix string `toml:"prefix"`
+    Timeout     int    `toml:"timeout"`
 }
 
 type MQTTInfo struct {
-	BrokerAddr string `toml:"broker_addr"`
-	PortMqtt   int    `toml:"port_mqtt"`
-	PortMqtts  int    `toml:"port_mqtts"`
-	UseMqtts   bool   `toml:"use_mqtts"`
-	Username   string `toml:"username"`
-	Password   string `toml:"password"`
-	Keepalive  int    `toml:"keepalive"`
-	Topic      string `toml:"topic"`
+    BrokerAddr string `toml:"broker_addr"`
+    PortMqtt   int    `toml:"port_mqtt"`
+    PortMqtts  int    `toml:"port_mqtts"`
+    UseMqtts   bool   `toml:"use_mqtts"`
+    Username   string `toml:"username"`
+    Password   string `toml:"password"`
+    Keepalive  int    `toml:"keepalive"`
+    Topic      string `toml:"topic"`
 }
 
 type MonitoringInfo struct {
-	ExposeStats     bool   `toml:"expose_stats"`
-	PrometheusRoute string `toml:"route"`
+    ExposeStats     bool   `toml:"expose_stats"`
+    PrometheusRoute string `toml:"route"`
 }
 
 */
