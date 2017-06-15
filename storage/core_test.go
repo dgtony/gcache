@@ -6,26 +6,17 @@ import (
 	"time"
 )
 
-func getTestKV() map[string][]byte {
-	return map[string][]byte{
-		"key1": []byte("value1"),
-		"key2": []byte("value2"),
-		"key3": []byte("value3"),
-		"key4": []byte("value4"),
-		"key5": []byte("value5")}
-}
-
 func TestCoreCRUDEmpty(t *testing.T) {
-	if _, err := MakeStorageEmpty(0); err == nil {
+	if _, err := MakeStorageEmpty(getTestConfig(0)); err == nil {
 		t.Error("no error for zero shards")
 	}
 
-	if _, err := MakeStorageEmpty(MAX_SHARDS + 1); err == nil {
+	if _, err := MakeStorageEmpty(getTestConfig(MAX_SHARDS + 1)); err == nil {
 		t.Error("no error for too many shards")
 	}
 
 	numShards := 4
-	core, err := MakeStorageEmpty(numShards)
+	core, err := MakeStorageEmpty(getTestConfig(numShards))
 	if err != nil {
 		t.Errorf("create empty storage: %s", err)
 	}
@@ -48,7 +39,7 @@ func TestCoreCRUDEmpty(t *testing.T) {
 
 func TestCoreCRUDValues(t *testing.T) {
 	numShards := 4
-	core, err := MakeStorageEmpty(numShards)
+	core, err := MakeStorageEmpty(getTestConfig(numShards))
 	if err != nil {
 		t.Errorf("create empty storage: %s", err)
 	}
@@ -94,7 +85,7 @@ func TestCoreCRUDValues(t *testing.T) {
 
 func TestCoreIntegrationDumpRestore(t *testing.T) {
 	numShards := 4
-	core, err := MakeStorageEmpty(numShards)
+	core, err := MakeStorageEmpty(getTestConfig(numShards))
 	if err != nil {
 		t.Errorf("create empty storage: %s", err)
 	}
@@ -134,4 +125,24 @@ func TestCoreIntegrationDumpRestore(t *testing.T) {
 			t.Error("original and restored storages doesn't match")
 		}
 	}
+}
+
+/* helpers */
+
+func getTestConfig(numShards int) *utils.Config {
+	return &utils.Config{
+		General:     utils.GeneralSettings{},
+		Replication: utils.ReplicationSettings{},
+		Storage: utils.StorageSettings{
+			NumShards:               numShards,
+			ExpiredKeyCheckInterval: 60}}
+}
+
+func getTestKV() map[string][]byte {
+	return map[string][]byte{
+		"key1": []byte("value1"),
+		"key2": []byte("value2"),
+		"key3": []byte("value3"),
+		"key4": []byte("value4"),
+		"key5": []byte("value5")}
 }

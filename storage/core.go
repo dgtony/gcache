@@ -2,8 +2,8 @@ package core
 
 import (
 	"errors"
-	//"fmt"
 	"github.com/dgtony/gcache/utils"
+	"github.com/op/go-logging"
 	"sync"
 	"time"
 )
@@ -14,10 +14,13 @@ const (
 	KEY_MAX_LEN = 2048
 	// value size limit up to 10Mb
 	VALUE_MAX_SIZE = 10485760
-	// period of key expiration check, sec
-	//KEY_EXPIRATION_CHECK_INTERVAL = 30
-
 )
+
+var logger *logging.Logger
+
+func init_logger() {
+	logger = utils.GetLogger("Storage")
+}
 
 type ConcurrentMap []*ConcurrentMapShard
 
@@ -29,9 +32,11 @@ type ConcurrentMapShard struct {
 
 /* Storage methods */
 
-// TODO run procedures on shard ??
+func MakeStorageEmpty(conf *utils.Config) (ConcurrentMap, error) {
+	init_logger()
 
-func MakeStorageEmpty(numShards int) (ConcurrentMap, error) {
+	numShards := conf.Storage.NumShards
+
 	if numShards < 1 || numShards > MAX_SHARDS {
 		return nil, errors.New("wrong number of shards")
 	}
@@ -42,15 +47,31 @@ func MakeStorageEmpty(numShards int) (ConcurrentMap, error) {
 			Items:         make(map[string][]byte),
 			KeyExpiration: NewExpireQueue()}
 	}
+
+	cleanPeriod := time.Duration(conf.Storage.ExpiredKeyCheckInterval) * time.Second
+	m.runExpKeyCleaning(cleanPeriod)
 	return m, nil
 }
 
-// TODO??
-func MakeStorageFromDump(dump []byte) (ConcurrentMap, error) {
-	// deserialize into StorageDump
-	m := make(ConcurrentMap, 0)
+func MakeStorageFromDump(conf *utils.Config, snapshot []byte) (ConcurrentMap, error) {
+	init_logger()
 
-	// TODO
+	// decode snapshot
+	storageDump, err := deserializeDump(snapshot)
+	if err != nil {
+		return nil, err
+	}
+
+	// create storage
+	numShards := len(storageDump)
+	m := make(ConcurrentMap, numShards)
+	for i := 0; i < numShards; i++ {
+		m[i] = &ConcurrentMapShard{
+			Items:         storageDump[i].Items,
+			KeyExpiration: storageDump[i].KeyExpiration}
+	}
+	cleanPeriod := time.Duration(conf.Storage.ExpiredKeyCheckInterval) * time.Second
+	m.runExpKeyCleaning(cleanPeriod)
 	return m, nil
 }
 
@@ -97,37 +118,42 @@ func (c ConcurrentMap) Keys() []string {
 		go func(shardIndex int) {
 			shard := c[shardIndex]
 			shard.Lock()
-
-			//fmt.Printf("goroutine #%d, lock shard\n", shardIndex)
-
 			shardKeys := shard.getShardKeys()
-
-			//fmt.Printf("goroutine #%d, get key chunk: %v\n", i, shardKeys)
-
 			shard.Unlock()
 			resChan <- shardKeys
 		}(i)
 	}
 
 	// gather results
-
-	//fmt.Println("waiting for Keys result...")
-
 	keys := make([]string, 0)
 	for i := 0; i < numShards; i++ {
 		keyChunk := <-resChan
-
-		//fmt.Printf("get key chunk #%d\n", i)
-
 		keys = append(keys, keyChunk...)
 	}
-
-	//fmt.Println("ok, all keys are gathered!")
 
 	return keys
 }
 
 /* internals */
+
+func (c ConcurrentMap) runExpKeyCleaning(cleanPeriod time.Duration) {
+	for _, shard := range c {
+		// run separate cleaner process for each shard
+		go func(shard *ConcurrentMapShard) {
+			for {
+				time.Sleep(cleanPeriod)
+				shard.Lock()
+				ok, expiredKeys := shard.KeyExpiration.GetExpiredKeys()
+				if ok {
+					for _, k := range expiredKeys {
+						delete(shard.Items, k)
+					}
+				}
+				shard.Unlock()
+			}
+		}(shard)
+	}
+}
 
 // Return shard for given key
 func (c ConcurrentMap) getShard(key string) (*ConcurrentMapShard, bool) {
@@ -151,19 +177,20 @@ func validValue(value []byte) bool {
 	return true
 }
 
+// do not use outside - not thread-safe!
 func (c *ConcurrentMapShard) getShardKeys() []string {
 	i := 0
-	//c.Lock()
 	keys := make([]string, len(c.Items))
 	for k, _ := range c.Items {
 		keys[i] = k
 		i++
 	}
-	//c.Unlock()
 	return keys
 }
 
 ////////////////////////////////
+
+// WTD?
 
 /*
 func BootstrapStorage(dumpFile string, master bool, numShards int) (ConcurrentMap, error) {
