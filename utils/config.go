@@ -29,6 +29,7 @@ type StorageSettings struct {
 }
 
 type ReplicationSettings struct {
+	NodeRole             string `toml:"node_role"`
 	RestoreCacheFromFile bool   `toml:"restore_from_file"`
 	SaveCacheToFile      bool   `toml:"save_to_file"`
 	CacheFile            string `toml:"cache_file"`

@@ -1,4 +1,4 @@
-package core
+package storage
 
 import (
 	"errors"
@@ -32,7 +32,7 @@ type ConcurrentMapShard struct {
 
 /* Storage methods */
 
-func MakeStorageEmpty(conf *utils.Config) (ConcurrentMap, error) {
+func MakeStorageEmpty(conf *utils.Config) (*ConcurrentMap, error) {
 	init_logger()
 
 	numShards := conf.Storage.NumShards
@@ -50,10 +50,10 @@ func MakeStorageEmpty(conf *utils.Config) (ConcurrentMap, error) {
 
 	cleanPeriod := time.Duration(conf.Storage.ExpiredKeyCheckInterval) * time.Second
 	m.runExpKeyCleaning(cleanPeriod)
-	return m, nil
+	return &m, nil
 }
 
-func MakeStorageFromDump(conf *utils.Config, snapshot []byte) (ConcurrentMap, error) {
+func MakeStorageFromDump(conf *utils.Config, snapshot []byte) (*ConcurrentMap, error) {
 	init_logger()
 
 	// decode snapshot
@@ -72,7 +72,7 @@ func MakeStorageFromDump(conf *utils.Config, snapshot []byte) (ConcurrentMap, er
 	}
 	cleanPeriod := time.Duration(conf.Storage.ExpiredKeyCheckInterval) * time.Second
 	m.runExpKeyCleaning(cleanPeriod)
-	return m, nil
+	return &m, nil
 }
 
 func (c *ConcurrentMap) Get(key string) ([]byte, bool) {

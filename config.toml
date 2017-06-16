@@ -19,6 +19,9 @@ key_exp_check_interval = 30
 
 
 [replication]
+# standalone/master/slave
+node_role = "standalone"
+
 # restore cache from dump
 restore_from_file = false
 

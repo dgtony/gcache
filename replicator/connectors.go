@@ -6,33 +6,28 @@ import (
 	"github.com/dgtony/gcache/utils"
 
 	//remove
-	"fmt"
+	//"fmt"
 
+	"crypto/sha256"
 	"io"
 	"net"
-	"sync"
+	//"sync"
 	"time"
 )
 
-// TODO change type??
-// WTF is it in fact?
-type MasterConn struct {
-	Conn net.Conn
-	Addr string
-	//Timeout time.Duration
-	sync.Mutex
-}
-
+/*
 // rename -> MasterConn
-type SlaveConn struct {
+type MasterConn struct {
 	Conn             net.Conn
 	IsConnected      bool
 	MasterAddr       string
+	MasterSecretHash []byte
 	Timeout          time.Duration
 	ReconMaxWait     time.Duration
 	ReconMaxAttempts int
 	sync.Mutex
 }
+*/
 
 // TODO implement link control and reconnect to master
 
@@ -48,7 +43,8 @@ type SlaveConn struct {
 
 // addr is a pair host:port
 // fmt.Sprintf("%s:%d", addr, port)
-func (c *SlaveConn) connect() error {
+/*
+func (c *MasterConn) connect() error {
 	conn, err := net.DialTimeout("tcp", c.Addr, c.Timeout)
 	if err != nil {
 		return err
@@ -60,16 +56,80 @@ func (c *SlaveConn) connect() error {
 	c.Unlock()
 	return nil
 }
+*/
 
-func (c *SlaveConn) ConnectMaster() {
+const (
+	RECONN_MAX_ATTEMPTS = 10
+	RECONN_MAX_WAIT     = 60 * time.Second
+)
+
+func ConnectMaster(masterAddr string, timeout time.Duration, secretHash []byte) net.Conn {
+	connAttempt := 0
+
+	for i := 0; i < RECONN_MAX_ATTEMPTS; i++ {
+		// try to connect
+		conn, err := net.DialTimeout("tcp", masterAddr, timeout)
+		if err == nil {
+			// auth
+			err = SendMsg(conn, ServiceMsg{Type: MSG_TYPE_AUTH_REQ, Payload: secretHash})
+			if err != nil {
+				//return nil, err
+				panic(err)
+			}
+			resp, err := ReceiveMsg(conn, timeout)
+			if err != nil {
+				//return nil, err
+				panic(err)
+			}
+
+			// parse response
+			switch resp.Type {
+			case MSG_TYPE_AUTH_OK:
+				logger.Infof("master node connection established, attempts: %d", connAttempt+1)
+				//return conn, nil
+				return conn
+			case MSG_TYPE_AUTH_DENY:
+				//return nil, errors.New("master node authorization failure")
+				panic("master node authorization failure")
+			default:
+				//return nil, errors.New(string(resp.Payload))
+				panic(string(resp.Payload))
+			}
+		}
+		time.Sleep(backoff(connAttempt, RECONN_MAX_WAIT))
+	}
+	panic("cannot connect to master node")
+}
+
+func GetMasterDump(conn net.Conn, timeout time.Duration) ([]byte, error) {
+	err := SendMsg(conn, ServiceMsg{Type: MSG_TYPE_GET_DUMP})
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ReceiveMsg(conn, timeout)
+	if err != nil {
+		return nil, err
+	}
+
+	switch resp.Type {
+	case MSG_TYPE_DUMP:
+		return resp.Payload, nil
+	case MSG_TYPE_ERR:
+		return nil, errors.New(string(resp.Payload))
+	default:
+		logger.Errorf("unexpected master response, message type: %d", resp.Type)
+		return nil, errors.New("unexpected master response")
+	}
+}
+
+/*
+// ???
+func (c *MasterConn) ConnectMaster() {
 	attempt := 0
 	for {
 		err := c.connect()
 		if err == nil {
-
-			// TODO replace with logger
-			fmt.Printf("connection to master node established, attempts: %d", attempt+1)
-
+			logger.Infof("connection to master node established, attempts: %d", attempt+1)
 			break
 		}
 
@@ -83,12 +143,28 @@ func (c *SlaveConn) ConnectMaster() {
 		time.Sleep(backoff(attempt, c.ReconMaxWait))
 	}
 
-	// TODO send auth with MasterKey
+	// TODO send auth with MasterKey hash
 	// receive AUTH_OK
 
 	return nil
 
 }
+
+func (c *MasterConn) GetDump() ([]byte, error) {
+	c.Lock()
+	if !c.IsConnected {
+		c.Unlock()
+		return nil, errors.New("not connected")
+	}
+	err := SendMsg(c.Conn, msg)
+	resp, err := ReceiveMsg(c.Conn, timeout)
+	c.Unlock()
+	//asdsa
+
+}
+*/
+
+/////////////////////
 
 /*
 // previous version
@@ -116,6 +192,52 @@ func (c *SlaveConn) ConnectMaster() {
 }
 */
 
+func handleSlaveConn(conn net.Conn, r *Replicator) {
+	// auth phase
+	authMsg, err := ReceiveMsg(conn, CONN_AUTH_WAIT)
+	if err != nil {
+		logger.Debugf("slave authentication failed: %s", err)
+		return
+	}
+	if authMsg.Type != MSG_TYPE_AUTH_REQ || !utils.CompareByteSlices(authMsg.Payload, r.MasterSecretHash) {
+		logger.Debug("slave authentication failed: bad auth")
+		SendMsg(conn, ServiceMsg{Type: MSG_TYPE_AUTH_DENY})
+		return
+	}
+
+	// auth ok - proceed communication
+	logger.Debugf("slave connected: %s", conn.RemoteAddr())
+	for {
+		msg, err := ReceiveMsg(conn, CONN_MAX_IDLE)
+		if err != nil {
+			if err == io.EOF {
+				logger.Debugf("slave disconnected: %s", conn.RemoteAddr())
+			} else {
+				// timeout fired
+				logger.Debugf("disconnect idle slave: %s", conn.RemoteAddr())
+				conn.Close()
+			}
+			return
+		}
+		// process message
+		switch msg.Type {
+		case MSG_TYPE_GET_DUMP:
+			r.Lock()
+			dump := r.CacheDump
+			r.Unlock()
+			if err := SendMsg(conn, ServiceMsg{Type: MSG_TYPE_DUMP, Payload: dump}); err != nil {
+				// FIXME: mb close connection?
+				logger.Debugf("error sending dump to slave: %s", err)
+			}
+
+		default:
+			logger.Debugf("unsupported message from slave node %s, type: %d", conn.RemoteAddr(), msg.Type)
+			SendMsg(conn, ServiceMsg{Type: MSG_TYPE_ERR, Payload: []byte("unsupported command")})
+		}
+	}
+
+}
+
 // message types
 const (
 	// auth
@@ -131,7 +253,7 @@ const (
 )
 
 const (
-	MAX_MSG_SIZE = 4 * 1024 * 1024 * 1024
+	MAX_MSG_SIZE = 4294967295
 )
 
 type ServiceMsg struct {
@@ -152,7 +274,7 @@ type MsgType uint8
 func SendMsg(conn net.Conn, msg ServiceMsg) error {
 	// length prefix
 	msgLen := uint32(len(msg.Payload) + 1)
-	err = binary.Write(conn, binary.BigEndian, msgLen)
+	err := binary.Write(conn, binary.BigEndian, msgLen)
 	if err != nil {
 		return err
 	}
@@ -173,11 +295,12 @@ func SendMsg(conn net.Conn, msg ServiceMsg) error {
 
 func ReceiveMsg(conn net.Conn, timeout time.Duration) (ServiceMsg, error) {
 	if err := conn.SetReadDeadline(time.Now().Add(timeout)); err != nil {
-		return ServiceMsg, err
+		return ServiceMsg{}, err
 	}
 
 	// get length prefix
-	err = binary.Read(io.LimitReader(conn, 4), binary.BigEndian, &msgLen)
+	var msgLen uint32
+	err := binary.Read(io.LimitReader(conn, 4), binary.BigEndian, &msgLen)
 	if err != nil {
 		return ServiceMsg{}, err
 	}
@@ -188,23 +311,39 @@ func ReceiveMsg(conn net.Conn, timeout time.Duration) (ServiceMsg, error) {
 		return ServiceMsg{}, errors.New("wrong message length")
 	}
 
-	// read entire message from buffer
-	msgBuff := make([]byte, msgLen)
+	// get message type
+	var msgType MsgType
+	err = binary.Read(io.LimitReader(conn, 1), binary.BigEndian, &msgType)
+	if err != nil {
+		return ServiceMsg{}, err
+	}
+
+	// read message payload from buffer
+	msgBuff := make([]byte, msgLen-1)
 	_, err = io.ReadFull(conn, msgBuff)
 	if err != nil {
 		return ServiceMsg{}, err
 	}
 	// FIXME use LimitReader again for msgType to avoid reallocation
-	return ServiceMsg{Type: msgBuff[0], Payload: msgBuff[1:]}, nil
+	//return ServiceMsg{Type: uint8(msgBuff[0]), Payload: msgBuff[1:]}, nil
+	return ServiceMsg{Type: msgType, Payload: msgBuff}, nil
 }
 
 /* internal stuff */
 
 // exponential backoff
-func backoff(attempt int, maxWait time.Duration) int {
-	wait := (utils.Pow(2, attempt) - 1) * time.Second
+func backoff(attempt int, maxWait time.Duration) time.Duration {
+	wait := time.Duration((utils.Pow(2, attempt) - 1)) * time.Second
 	if wait > maxWait {
 		return maxWait
 	}
 	return wait
+}
+
+func getSecretHash(secret string) []byte {
+	secretHash := make([]byte, 32)
+	for i, v := range sha256.Sum256([]byte(secret)) {
+		secretHash[i] = v
+	}
+	return secretHash
 }

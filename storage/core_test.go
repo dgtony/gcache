@@ -1,4 +1,4 @@
-package core
+package storage
 
 import (
 	"github.com/dgtony/gcache/utils"
