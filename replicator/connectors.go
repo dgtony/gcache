@@ -64,9 +64,7 @@ const (
 )
 
 func ConnectMaster(masterAddr string, timeout time.Duration, secretHash []byte) net.Conn {
-	connAttempt := 0
-
-	for i := 0; i < RECONN_MAX_ATTEMPTS; i++ {
+	for connAttempt := 0; connAttempt < RECONN_MAX_ATTEMPTS; connAttempt++ {
 		// try to connect
 		conn, err := net.DialTimeout("tcp", masterAddr, timeout)
 		if err == nil {
@@ -96,6 +94,7 @@ func ConnectMaster(masterAddr string, timeout time.Duration, secretHash []byte) 
 				panic(string(resp.Payload))
 			}
 		}
+		// wait next reconnect
 		time.Sleep(backoff(connAttempt, RECONN_MAX_WAIT))
 	}
 	panic("cannot connect to master node")
@@ -206,7 +205,10 @@ func handleSlaveConn(conn net.Conn, r *Replicator) {
 	}
 
 	// auth ok - proceed communication
+	SendMsg(conn, ServiceMsg{Type: MSG_TYPE_AUTH_OK})
 	logger.Debugf("slave connected: %s", conn.RemoteAddr())
+
+	// waiting for requests
 	for {
 		msg, err := ReceiveMsg(conn, CONN_MAX_IDLE)
 		if err != nil {

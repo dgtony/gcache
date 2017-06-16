@@ -56,14 +56,15 @@ func (q *ExpireQueue) InsertKey(key string, ttl time.Duration) {
 
 // return: (someKeysAreExpiredFlag, expiredKeys)
 func (q *ExpireQueue) GetExpiredKeys() (bool, []string) {
-	if q.Len() < 1 {
-		return false, nil
-	}
 
 	var item *StorageKey
 	expiredKeys := make([]string, 0)
 	checkTime := time.Now().UnixNano()
 	for {
+		if q.Len() < 1 {
+			break
+		}
+
 		// get element
 		item = heap.Pop(q).(*StorageKey)
 		if item.Expire < checkTime {

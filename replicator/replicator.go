@@ -4,7 +4,7 @@ import (
 	"github.com/dgtony/gcache/storage"
 	"github.com/dgtony/gcache/utils"
 	"github.com/op/go-logging"
-	"io"
+	//"io"
 	"io/ioutil"
 	"net"
 	"sync"
@@ -75,7 +75,8 @@ func startMaster(rep *Replicator, conf *utils.Config) {
 }
 
 func startSlave(rep *Replicator, conf *utils.Config) {
-	rep.runDumpPuller(time.Duration(conf.Replication.DumpUpdatePeriod) * time.Second)
+	masterConn := startStorageSlave(rep, conf)
+	rep.runDumpPuller(masterConn, time.Duration(conf.Replication.DumpUpdatePeriod)*time.Second)
 	if conf.Replication.SaveCacheToFile {
 		rep.runFileDumper(time.Duration(conf.Replication.FileWritePeriod) * time.Second)
 	}
@@ -105,6 +106,21 @@ func startStorage(rep *Replicator, conf *utils.Config) {
 	rep.Store = store
 }
 
+func startStorageSlave(rep *Replicator, conf *utils.Config) net.Conn {
+	conn := ConnectMaster(rep.MasterAddr, CONN_TIMEOUT, rep.MasterSecretHash)
+	dump, err := GetMasterDump(conn, CONN_GET_DUMP_TIMEOUT)
+	if err != nil {
+		panic(err)
+	}
+	store, err := storage.MakeStorageFromDump(conf, dump)
+	if err != nil {
+		logger.Errorf("create storage from master snapshot: %s", err)
+		panic(err)
+	}
+	rep.Store = store
+	return conn
+}
+
 /* replicator proccesses */
 
 // take current snapshot from storage
@@ -129,6 +145,7 @@ func (r *Replicator) runFileDumper(dumpSavePeriod time.Duration) {
 	go func() {
 		for {
 			time.Sleep(dumpSavePeriod)
+
 			// save current dump in file
 			r.Lock()
 			data := r.CacheDump
@@ -141,17 +158,16 @@ func (r *Replicator) runFileDumper(dumpSavePeriod time.Duration) {
 }
 
 // pull storage dump from master (slave only)
-func (r *Replicator) runDumpPuller(pullDumpPeriod time.Duration) {
+func (r *Replicator) runDumpPuller(conn net.Conn, pullDumpPeriod time.Duration) {
 	go func() {
 		reconFlag := false
-		conn := ConnectMaster(r.MasterAddr, CONN_TIMEOUT, r.MasterSecretHash)
 
 		// main loop
 		for {
 			// try to send request
 			dump, err := GetMasterDump(conn, CONN_GET_DUMP_TIMEOUT)
 			if err != nil {
-				if err == io.EOF && !reconFlag {
+				if !reconFlag {
 					// try to reconnect
 					reconFlag = true
 					conn = ConnectMaster(r.MasterAddr, CONN_TIMEOUT, r.MasterSecretHash)
@@ -161,10 +177,18 @@ func (r *Replicator) runDumpPuller(pullDumpPeriod time.Duration) {
 				}
 			}
 			reconFlag = false
+
+			// update storage
 			if err = r.Store.RestoreFromDump(dump); err != nil {
-				logger.Errorf("restore storage from snapshot: %s", err)
+				logger.Errorf("update storage from master snapshot: %s", err)
 				panic(err)
 			}
+
+			// update cache dump (for file saving)
+			r.Lock()
+			r.CacheDump = dump
+			r.Unlock()
+
 			time.Sleep(pullDumpPeriod)
 		}
 	}()

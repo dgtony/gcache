@@ -7,7 +7,7 @@ import (
 
 type Config struct {
 	General     GeneralSettings     `toml:"general"`
-	Storage     StorageSettings     `toml:"storage`
+	Storage     StorageSettings     `toml:"storage"`
 	Replication ReplicationSettings `toml:"replication"`
 
 	//General    GeneralInfo    `toml:"general"`
@@ -24,8 +24,8 @@ type GeneralSettings struct {
 }
 
 type StorageSettings struct {
-	NumShards               int `toml:"shards`
-	ExpiredKeyCheckInterval int `toml:"key_exp_check_interval`
+	NumShards               int `toml:"shards"`
+	ExpiredKeyCheckInterval int `toml:"key_exp_check_interval"`
 }
 
 type ReplicationSettings struct {
@@ -34,7 +34,7 @@ type ReplicationSettings struct {
 	SaveCacheToFile      bool   `toml:"save_to_file"`
 	CacheFile            string `toml:"cache_file"`
 	FileWritePeriod      int    `toml:"file_write_period"`
-	DumpUpdatePeriod     int    `toml:"dump_period"`
+	DumpUpdatePeriod     int    `toml:"dump_update_period"`
 	MasterAddr           string `toml:"master_addr"`
 	MasterSecret         string `toml:"master_secret"`
 }

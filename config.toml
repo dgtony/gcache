@@ -7,7 +7,7 @@ log_level = "debug"
 log_format = "long"
 
 # stdout/stderr
-log_out = "stderr"
+log_out = "stdout"
 
 
 [storage]
@@ -20,13 +20,13 @@ key_exp_check_interval = 30
 
 [replication]
 # standalone/master/slave
-node_role = "standalone"
+node_role = "master"
 
 # restore cache from dump
-restore_from_file = false
+restore_from_file = true
 
 # dump cache to file 
-save_to_file = false
+save_to_file = true
 
 # dump file path
 cache_file = "./cache_dump.dat"

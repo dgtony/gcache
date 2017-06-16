@@ -37,6 +37,8 @@ func MakeStorageEmpty(conf *utils.Config) (*ConcurrentMap, error) {
 
 	numShards := conf.Storage.NumShards
 
+	logger.Debugf("create storage with %d shards", numShards)
+
 	if numShards < 1 || numShards > MAX_SHARDS {
 		return nil, errors.New("wrong number of shards")
 	}
