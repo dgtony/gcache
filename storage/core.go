@@ -3,6 +3,7 @@ package storage
 import (
 	"errors"
 	"github.com/dgtony/gcache/utils"
+	"github.com/gobwas/glob"
 	"github.com/op/go-logging"
 	"sync"
 	"time"
@@ -135,6 +136,26 @@ func (c ConcurrentMap) Keys() []string {
 
 	return keys
 }
+
+// return keys according to given pattern
+// use glob pattern matching
+func (c ConcurrentMap) KeysPattern(pattern string) ([]string, error) {
+	g, err := glob.Compile(pattern)
+	if err != nil {
+		return nil, err
+	}
+	filtered := make([]string, 0)
+	for _, s := range c.Keys() {
+		if g.Match(s) {
+			filtered = append(filtered, s)
+		}
+	}
+	return filtered, nil
+}
+
+// TODO additional methods!
+// - get list element with index
+// - get dictionary value with key
 
 /* internals */
 
