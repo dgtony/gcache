@@ -26,7 +26,7 @@ node_role = "master"
 restore_from_file = true
 
 # dump cache to file 
-save_to_file = false
+save_to_file = true
 
 # dump file path
 cache_file = "./cache_dump.dat"

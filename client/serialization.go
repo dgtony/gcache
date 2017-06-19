@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/dgtony/gcache/storage"
 	"io"
-	//"reflect"
 )
 
 /* User data serialization/deserialization */
@@ -52,9 +51,9 @@ func GetListItem(s *storage.ConcurrentMap, key string, subIndex int) ([]byte, bo
 		return nil, false
 	}
 
-	//try to decode value in list
+	//try to decode value into list
 	var valueList []interface{}
-	if err := json.Unmarshal(res, valueList); err != nil {
+	if err := json.Unmarshal(res, &valueList); err != nil {
 		return nil, false
 	}
 
@@ -63,7 +62,7 @@ func GetListItem(s *storage.ConcurrentMap, key string, subIndex int) ([]byte, bo
 		return nil, false
 	}
 
-	// encode chosen value back to bytes
+	// encode picked value back to bytes
 	encodedItem, err := json.Marshal(valueList[subIndex])
 	if err != nil {
 		return nil, false
@@ -79,16 +78,19 @@ func GetDictItem(s *storage.ConcurrentMap, key, subKey string) ([]byte, bool) {
 		return nil, false
 	}
 
-	// try to decode in dictionary
-	//subKeyType := reflect.TypeOf(subKey)
-	//var valueDict map[subKeyType]interface{}
+	// try to decode value into dictionary
 	var valueDict map[string]interface{}
 
-	if err := json.Unmarshal(res, valueDict); err != nil {
+	if err := json.Unmarshal(res, &valueDict); err != nil {
 		return nil, false
 	}
 
-	encodedItem, err := json.Marshal(valueDict[subKey])
+	value, ok := valueDict[subKey]
+	if !ok {
+		return nil, false
+	}
+
+	encodedItem, err := json.Marshal(value)
 	if err != nil {
 		return nil, false
 	}
