@@ -137,12 +137,12 @@ func (c ConcurrentMap) Keys() []string {
 	return keys
 }
 
-// return keys according to given pattern
+// return keys according to given mask
 // use glob pattern matching
-func (c ConcurrentMap) KeysPattern(pattern string) ([]string, error) {
-	g, err := glob.Compile(pattern)
+func (c ConcurrentMap) KeysMask(mask string) ([]string, bool) {
+	g, err := glob.Compile(mask)
 	if err != nil {
-		return nil, err
+		return nil, false
 	}
 	filtered := make([]string, 0)
 	for _, s := range c.Keys() {
@@ -150,12 +150,8 @@ func (c ConcurrentMap) KeysPattern(pattern string) ([]string, error) {
 			filtered = append(filtered, s)
 		}
 	}
-	return filtered, nil
+	return filtered, true
 }
-
-// TODO additional methods!
-// - get list element with index
-// - get dictionary value with key
 
 /* internals */
 
@@ -164,7 +160,6 @@ func (c ConcurrentMap) runExpKeyCleaning(cleanPeriod time.Duration) {
 		// run separate cleaner process for each shard
 		go func(shard *ConcurrentMapShard) {
 			for {
-				time.Sleep(cleanPeriod)
 				shard.Lock()
 				ok, expiredKeys := shard.KeyExpiration.GetExpiredKeys()
 				if ok {
@@ -173,6 +168,7 @@ func (c ConcurrentMap) runExpKeyCleaning(cleanPeriod time.Duration) {
 					}
 				}
 				shard.Unlock()
+				time.Sleep(cleanPeriod)
 			}
 		}(shard)
 	}
