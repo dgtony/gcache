@@ -10,13 +10,22 @@ import (
 	// for DEBUG
 	//"net/http"
 	//_ "net/http/pprof"
+	"fmt"
 	"sync"
 	"time"
 )
 
 var logger *logging.Logger
 
+func catch_err() {
+	if err := recover(); err != nil {
+		fmt.Printf("program error occured => %s\n", err)
+	}
+}
+
 func main() {
+	defer catch_err()
+
 	confFile := flag.String("c", "config.toml", "path to config file")
 	flag.Parse()
 
@@ -29,6 +38,8 @@ func main() {
 	// setup loggers
 	utils.SetupLoggers(config)
 	logger = utils.GetLogger("Cache")
+
+	logger.Infof("starting cache, node role: %s", config.Replication.NodeRole)
 
 	// TODO remove
 	logger.Debugf("config: %+v", config)
