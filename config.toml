@@ -26,7 +26,7 @@ node_role = "master"
 restore_from_file = true
 
 # dump cache to file 
-save_to_file = true
+save_to_file = false
 
 # dump file path
 cache_file = "./cache_dump.dat"
@@ -40,7 +40,21 @@ dump_update_period = 10
 
 # for master - interface to listen on, for slave - address of master node
 # address format: "<host>:<port>"
-master_addr = ":1324"
+master_addr = ":4545"
 
 # access key, must be similar on master and slaves
 master_secret = "supersecret"
+
+
+[client-HTTP]
+# HTTP server address to listen on
+address = "0.0.0.0"
+
+# HTTP server port
+port = "8080"
+
+# client path prefix
+prefix = "cache/v1"
+
+# max idle time between requests, sec
+idle_timeout = 900

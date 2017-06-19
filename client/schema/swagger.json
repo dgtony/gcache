@@ -1,0 +1,198 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "<Go Cache API>",
+    "description": "Simple REST API for the gcache server."
+  },
+  "schemes": [
+    "http"
+  ],
+  "basePath": "/cache/v1",
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/item": {
+      "get": {
+        "summary": "Get stored value by key",
+        "description": "Obtain value by given key string. Usually string values could be obtained, but in case subkey/subindex was defined, cache try to find the item in value dictionary/array.\n",
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "stored value key and possible subkey/index",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ItemRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "corresponding value found in storage",
+            "schema": {
+              "$ref": "#/definitions/ItemResponse"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Store value with given key",
+        "description": "Save some value in the storage with the string key.\n",
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Object with stored key and value",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ItemRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "value saved in storage"
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove value with given key",
+        "description": "Remove previously stored value by given string key. Entire value will be removed, ignoring subkey/subindex parameters.\n",
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Object with stored key and value",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ItemRequest"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "value was removed from storage"
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/keys": {
+      "get": {
+        "summary": "Get stored keys",
+        "description": "Obtain list of stored keys matching given mask\n",
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "key mask",
+            "schema": {
+              "$ref": "#/definitions/KeyRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "keys found in storage",
+            "schema": {
+              "$ref": "#/definitions/KeyResponse"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ItemRequest": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "subkey": {
+          "type": "string"
+        },
+        "subindex": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    },
+    "ItemResponse": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "subkey": {
+          "type": "string"
+        },
+        "subindex": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ]
+    },
+    "KeyRequest": {
+      "type": "object",
+      "properties": {
+        "mask": {
+          "type": "string"
+        }
+      }
+    },
+    "KeyResponse": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "Error": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

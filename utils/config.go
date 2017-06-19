@@ -9,10 +9,11 @@ type Config struct {
 	General     GeneralSettings     `toml:"general"`
 	Storage     StorageSettings     `toml:"storage"`
 	Replication ReplicationSettings `toml:"replication"`
+	ClientHTTP  ClientHTTPSettings  `toml:"client-HTTP"`
 
 	//General    GeneralInfo    `toml:"general"`
 	//Swagger    SwaggerInfo    `toml:"swagger"`
-	//HTTP       HTTPInfo       `toml:"HTTP"`
+
 	//MQTT       MQTTInfo       `toml:"MQTT"`
 	//Monitoring MonitoringInfo `toml:"monitoring"`
 }
@@ -39,6 +40,13 @@ type ReplicationSettings struct {
 	MasterSecret         string `toml:"master_secret"`
 }
 
+type ClientHTTPSettings struct {
+	Addr        string `toml:"address"`
+	Port        string `toml:"port"`
+	RoutePrefix string `toml:"prefix"`
+	IdleTimeout int    `toml:"idle_timeout"`
+}
+
 /*
 
 type StorageInfo struct {
@@ -57,12 +65,6 @@ type SwaggerInfo struct {
     File   string `toml:"file"`
 }
 
-type HTTPInfo struct {
-    Addr        string `toml:"address"`
-    Port        int16  `toml:"port"`
-    RoutePrefix string `toml:"prefix"`
-    Timeout     int    `toml:"timeout"`
-}
 
 type MQTTInfo struct {
     BrokerAddr string `toml:"broker_addr"`
