@@ -6,7 +6,10 @@ import (
 	"time"
 )
 
+var logSetFlag bool
+
 func TestCoreCRUDEmpty(t *testing.T) {
+	setup_logger()
 	if _, err := MakeStorageEmpty(getTestConfig(0)); err == nil {
 		t.Error("no error for zero shards")
 	}
@@ -38,6 +41,7 @@ func TestCoreCRUDEmpty(t *testing.T) {
 }
 
 func TestCoreCRUDValues(t *testing.T) {
+	setup_logger()
 	numShards := 4
 	core, err := MakeStorageEmpty(getTestConfig(numShards))
 	if err != nil {
@@ -84,6 +88,7 @@ func TestCoreCRUDValues(t *testing.T) {
 }
 
 func TestCoreIntegrationDumpRestore(t *testing.T) {
+	setup_logger()
 	numShards := 4
 	core, err := MakeStorageEmpty(getTestConfig(numShards))
 	if err != nil {
@@ -131,7 +136,10 @@ func TestCoreIntegrationDumpRestore(t *testing.T) {
 
 func getTestConfig(numShards int) *utils.Config {
 	return &utils.Config{
-		General:     utils.GeneralSettings{},
+		General: utils.GeneralSettings{
+			LogLevel:  "debug",
+			LogFormat: "short",
+			LogOut:    "stdout"},
 		Replication: utils.ReplicationSettings{},
 		Storage: utils.StorageSettings{
 			NumShards:               numShards,
@@ -145,4 +153,11 @@ func getTestKV() map[string][]byte {
 		"key3": []byte("value3"),
 		"key4": []byte("value4"),
 		"key5": []byte("value5")}
+}
+
+func setup_logger() {
+	if !logSetFlag {
+		logConf := getTestConfig(1)
+		utils.SetupLoggers(logConf)
+	}
 }
