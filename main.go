@@ -7,12 +7,14 @@ import (
 	"github.com/dgtony/gcache/replicator"
 	"github.com/dgtony/gcache/utils"
 	"github.com/op/go-logging"
+	"sync"
 	// for DEBUG
 	//"net/http"
 	//_ "net/http/pprof"
 )
 
 var logger *logging.Logger
+var wg sync.WaitGroup
 
 func catch_err() {
 	if err := recover(); err != nil {
@@ -44,7 +46,9 @@ func main() {
 	_, store := replicator.RunReplicator(config)
 
 	// run clients
-	if err := client_rest.StartClientREST(config, store); err != nil {
-		panic(err)
-	}
+	_ = client_rest.StartClientREST(config, store)
+	wg.Add(1)
+
+	// wait for all clients to stop
+	wg.Wait()
 }

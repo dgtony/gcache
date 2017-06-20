@@ -11,7 +11,7 @@ import (
 
 var logger *logging.Logger
 
-func StartClientREST(conf *utils.Config, store *storage.ConcurrentMap) error {
+func StartClientREST(conf *utils.Config, store *storage.ConcurrentMap) *http.Server {
 	logger = utils.GetLogger("REST")
 
 	serverAddr := net.JoinHostPort(conf.ClientHTTP.Addr, conf.ClientHTTP.Port)
@@ -24,5 +24,11 @@ func StartClientREST(conf *utils.Config, store *storage.ConcurrentMap) error {
 		ReadTimeout:  time.Duration(conf.ClientHTTP.IdleTimeout) * time.Second,
 		WriteTimeout: time.Duration(conf.ClientHTTP.IdleTimeout) * time.Second}
 
-	return srv.ListenAndServe()
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			logger.Warningf("client stopped, reason: %s", err)
+		}
+	}()
+
+	return srv
 }

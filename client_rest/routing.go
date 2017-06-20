@@ -48,7 +48,13 @@ var routes = Routes{
 		HandlerF: GetKeysHandler}}
 
 func supplementRoute(route string, conf *utils.Config) string {
-	elems := []string{"", conf.ClientHTTP.RoutePrefix, route}
+	var elems []string
+	trimmedRoute := strings.TrimSpace(route)
+	if len(trimmedRoute) == 0 || trimmedRoute == "/" {
+		elems = []string{"", conf.ClientHTTP.RoutePrefix}
+	} else {
+		elems = []string{"", conf.ClientHTTP.RoutePrefix, trimmedRoute}
+	}
 	return strings.Join(elems, "/")
 }
 
