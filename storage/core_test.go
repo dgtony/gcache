@@ -140,7 +140,6 @@ func getTestConfig(numShards int) *utils.Config {
 			LogLevel:  "debug",
 			LogFormat: "short",
 			LogOut:    "stdout"},
-		Replication: utils.ReplicationSettings{},
 		Storage: utils.StorageSettings{
 			NumShards:               numShards,
 			ExpiredKeyCheckInterval: 60}}
