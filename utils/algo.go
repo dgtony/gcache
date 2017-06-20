@@ -21,8 +21,11 @@ func FNVSum64(key string) uint64 {
 	return hash
 }
 
-// fast Knuth power
+// fast Knuth power with modified behaviour on zero and negative
 func Pow(a, b int) int {
+	if a < 1 || b < 1 {
+		return 0
+	}
 	p := 1
 	for b > 0 {
 		if b&1 != 0 {
