@@ -67,6 +67,11 @@ func GetStorageFromContext(ctx context.Context) *storage.ConcurrentMap {
 func NewRouter(conf *utils.Config, store *storage.ConcurrentMap) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
+		// disable data changing endpoints on slave nodes
+		if conf.Replication.NodeRole == "slave" && (route.Name == "SetItem" || route.Name == "RemoveItem") {
+			continue
+		}
+
 		var handler http.HandlerFunc = route.HandlerF
 		wrapped := wrapContextEnv(handler, store)
 		fullRoute := supplementRoute(route.Pattern, conf)
