@@ -1,4 +1,4 @@
-package client
+package client_rest
 
 import (
 	"github.com/dgtony/gcache/storage"

@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/dgtony/gcache/client"
+	"github.com/dgtony/gcache/client_rest"
 	"github.com/dgtony/gcache/replicator"
 	"github.com/dgtony/gcache/utils"
 	"github.com/op/go-logging"
@@ -44,7 +44,7 @@ func main() {
 	_, store := replicator.RunReplicator(config)
 
 	// run clients
-	if err := client.StartClientREST(config, store); err != nil {
+	if err := client_rest.StartClientREST(config, store); err != nil {
 		panic(err)
 	}
 }
