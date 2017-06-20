@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "version": "1.0.0",
-    "title": "<Go Cache API>",
+    "title": "<GCache API>",
     "description": "Simple REST API for the gcache server."
   },
   "schemes": [
@@ -19,7 +19,7 @@
     "/item": {
       "get": {
         "summary": "Get stored value by key",
-        "description": "Obtain value by given key string. Usually string values could be obtained, but in case subkey/subindex was defined, cache try to find the item in value dictionary/array.\n",
+        "description": "Obtain value by given key string. Usually string values could be obtained, but in case subkey/subindex was defined, cache try to find the item in value dictionary/array. Please mind, that internal array index starts from 1.\n",
         "parameters": [
           {
             "name": "request",
@@ -27,7 +27,7 @@
             "description": "stored value key and possible subkey/index",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/ItemRequest"
+              "$ref": "#/definitions/GetItemRequest"
             }
           }
         ],
@@ -56,13 +56,16 @@
             "description": "Object with stored key and value",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/ItemRequest"
+              "$ref": "#/definitions/SetItemRequest"
             }
           }
         ],
         "responses": {
           "201": {
-            "description": "value saved in storage"
+            "description": "value saved in storage",
+            "schema": {
+              "$ref": "#/definitions/ItemResponse"
+            }
           },
           "default": {
             "description": "unexpected error",
@@ -82,7 +85,7 @@
             "description": "Object with stored key and value",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/ItemRequest"
+              "$ref": "#/definitions/RemoveItemRequest"
             }
           }
         ],
@@ -109,7 +112,7 @@
             "in": "body",
             "description": "key mask",
             "schema": {
-              "$ref": "#/definitions/KeyRequest"
+              "$ref": "#/definitions/Keys"
             }
           }
         ],
@@ -117,7 +120,7 @@
           "200": {
             "description": "keys found in storage",
             "schema": {
-              "$ref": "#/definitions/KeyResponse"
+              "$ref": "#/definitions/Keys"
             }
           },
           "default": {
@@ -131,7 +134,7 @@
     }
   },
   "definitions": {
-    "ItemRequest": {
+    "GetItemRequest": {
       "type": "object",
       "properties": {
         "key": {
@@ -142,6 +145,36 @@
         },
         "subindex": {
           "type": "integer"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    },
+    "SetItemRequest": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "ttl": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "ttl"
+      ]
+    },
+    "RemoveItemRequest": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
         }
       },
       "required": [
@@ -169,18 +202,18 @@
         "value"
       ]
     },
-    "KeyRequest": {
+    "Keys": {
       "type": "object",
       "properties": {
         "mask": {
           "type": "string"
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
-      }
-    },
-    "KeyResponse": {
-      "type": "array",
-      "items": {
-        "type": "string"
       }
     },
     "Error": {
