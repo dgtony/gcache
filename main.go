@@ -8,7 +8,7 @@ import (
 	"github.com/dgtony/gcache/utils"
 	"github.com/op/go-logging"
 	"sync"
-	// for DEBUG
+	// for debug
 	//"net/http"
 	//_ "net/http/pprof"
 )
@@ -38,9 +38,6 @@ func main() {
 	utils.SetupLoggers(config)
 	logger = utils.GetLogger("Cache")
 	logger.Infof("starting cache, node role: %s", config.Replication.NodeRole)
-
-	// TODO remove
-	logger.Debugf("config: %+v", config)
 
 	// run replicator and core storage
 	_, store := replicator.RunReplicator(config)

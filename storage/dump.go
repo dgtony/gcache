@@ -3,11 +3,7 @@ package storage
 import (
 	"bytes"
 	"encoding/gob"
-	//"errors"
-	//"io"
 )
-
-// TODO MB: make concurrent dump/restore?
 
 type StorageDump []ShardDump
 type ShardDump struct {

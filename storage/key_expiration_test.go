@@ -4,8 +4,6 @@ import (
 	"container/heap"
 	"testing"
 	"time"
-	//remove
-	//"fmt"
 )
 
 func TestKeyExpireHeapStructure(t *testing.T) {

@@ -10,12 +10,6 @@ type Config struct {
 	Storage     StorageSettings     `toml:"storage"`
 	Replication ReplicationSettings `toml:"replication"`
 	ClientHTTP  ClientHTTPSettings  `toml:"client-HTTP"`
-
-	//General    GeneralInfo    `toml:"general"`
-	//Swagger    SwaggerInfo    `toml:"swagger"`
-
-	//MQTT       MQTTInfo       `toml:"MQTT"`
-	//Monitoring MonitoringInfo `toml:"monitoring"`
 }
 
 type GeneralSettings struct {
@@ -47,47 +41,9 @@ type ClientHTTPSettings struct {
 	IdleTimeout int    `toml:"idle_timeout"`
 }
 
-/*
-
-type StorageInfo struct {
-    NumShards          int    `toml:"shards"`
-    ContentServerAddr  string `toml:"content_addr"`
-    UserDeviceEndpoint string `toml:"user_device_endpoint"`
-    DeviceInfoEndpoint string `toml:"device_info_endpoint"`
-    DeviceInfoLifeTime int    `toml:"device_info_lifetime"`
-    SessionCleanPeriod int    `toml:"session_clean_period"`
-    SessionLifeTime    int    `toml:"session_lifetime"`
-}
-
-type SwaggerInfo struct {
-    Expose bool   `toml:"expose"`
-    Route  string `toml:"route"`
-    File   string `toml:"file"`
-}
-
-
-type MQTTInfo struct {
-    BrokerAddr string `toml:"broker_addr"`
-    PortMqtt   int    `toml:"port_mqtt"`
-    PortMqtts  int    `toml:"port_mqtts"`
-    UseMqtts   bool   `toml:"use_mqtts"`
-    Username   string `toml:"username"`
-    Password   string `toml:"password"`
-    Keepalive  int    `toml:"keepalive"`
-    Topic      string `toml:"topic"`
-}
-
-type MonitoringInfo struct {
-    ExposeStats     bool   `toml:"expose_stats"`
-    PrometheusRoute string `toml:"route"`
-}
-
-*/
-
 func ReadConfig(configFile string) (*Config, error) {
 	_, err := os.Stat(configFile)
 	if err != nil {
-		//return &Config{}, err
 		return nil, err
 	}
 

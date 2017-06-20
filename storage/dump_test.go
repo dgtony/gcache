@@ -1,9 +1,7 @@
 package storage
 
 import (
-	//"bytes"
 	"github.com/dgtony/gcache/utils"
-	//"fmt" // remove
 	"testing"
 	"time"
 )
@@ -36,16 +34,10 @@ func TestCoreDumpSerializeDeserialize(t *testing.T) {
 		t.Errorf("dump serialization: %s", err)
 	}
 
-	//fmt.Printf("serialized dump: %x\n", ser)
-
-	//var dumpBuff bytes.Buffer
-	//dumpBuff.Write(ser)
 	dumpRestored, err := deserializeDump(ser)
 	if err != nil {
 		t.Errorf("dump deserialization: %s", err)
 	}
-
-	//fmt.Printf("deserialized dump: %+v\n", deser)
 
 	if !compareStorageDumps(dumpOriginal, dumpRestored) {
 		t.Error("dump serialization is not isomorphic")

@@ -54,7 +54,7 @@ func (q *ExpireQueue) InsertKey(key string, ttl time.Duration) {
 	heap.Push(q, item)
 }
 
-// return: (someKeysAreExpiredFlag, expiredKeys)
+// return tuple: (someKeysAreExpiredFlag, expiredKeys)
 func (q *ExpireQueue) GetExpiredKeys() (bool, []string) {
 
 	var item *StorageKey

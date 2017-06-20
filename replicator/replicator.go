@@ -4,7 +4,6 @@ import (
 	"github.com/dgtony/gcache/storage"
 	"github.com/dgtony/gcache/utils"
 	"github.com/op/go-logging"
-	//"io"
 	"io/ioutil"
 	"net"
 	"sync"

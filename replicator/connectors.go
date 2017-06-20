@@ -1,62 +1,14 @@
 package replicator
 
 import (
+	"crypto/sha256"
 	"encoding/binary"
 	"errors"
 	"github.com/dgtony/gcache/utils"
-
-	//remove
-	//"fmt"
-
-	"crypto/sha256"
 	"io"
 	"net"
-	//"sync"
 	"time"
 )
-
-/*
-// rename -> MasterConn
-type MasterConn struct {
-	Conn             net.Conn
-	IsConnected      bool
-	MasterAddr       string
-	MasterSecretHash []byte
-	Timeout          time.Duration
-	ReconMaxWait     time.Duration
-	ReconMaxAttempts int
-	sync.Mutex
-}
-*/
-
-// TODO implement link control and reconnect to master
-
-/*
-   // checkout receive message error
-   if err == io.EOF {
-       // todo set to offline and reconnect
-
-       logger("master conection lost")
-       c.ConnectMaster()
-   }
-*/
-
-// addr is a pair host:port
-// fmt.Sprintf("%s:%d", addr, port)
-/*
-func (c *MasterConn) connect() error {
-	conn, err := net.DialTimeout("tcp", c.Addr, c.Timeout)
-	if err != nil {
-		return err
-	}
-
-	c.Lock()
-	c.Conn = conn
-	c.IsConnected = true
-	c.Unlock()
-	return nil
-}
-*/
 
 const (
 	RECONN_MAX_ATTEMPTS = 10
@@ -71,12 +23,10 @@ func ConnectMaster(masterAddr string, timeout time.Duration, secretHash []byte) 
 			// auth
 			err = SendMsg(conn, ServiceMsg{Type: MSG_TYPE_AUTH_REQ, Payload: secretHash})
 			if err != nil {
-				//return nil, err
 				panic(err)
 			}
 			resp, err := ReceiveMsg(conn, timeout)
 			if err != nil {
-				//return nil, err
 				panic(err)
 			}
 
@@ -84,13 +34,10 @@ func ConnectMaster(masterAddr string, timeout time.Duration, secretHash []byte) 
 			switch resp.Type {
 			case MSG_TYPE_AUTH_OK:
 				logger.Infof("master node connection established, attempts: %d", connAttempt+1)
-				//return conn, nil
 				return conn
 			case MSG_TYPE_AUTH_DENY:
-				//return nil, errors.New("master node authorization failure")
 				panic("master node authorization failure")
 			default:
-				//return nil, errors.New(string(resp.Payload))
 				panic(string(resp.Payload))
 			}
 		}
@@ -120,76 +67,6 @@ func GetMasterDump(conn net.Conn, timeout time.Duration) ([]byte, error) {
 		return nil, errors.New("unexpected master response")
 	}
 }
-
-/*
-// ???
-func (c *MasterConn) ConnectMaster() {
-	attempt := 0
-	for {
-		err := c.connect()
-		if err == nil {
-			logger.Infof("connection to master node established, attempts: %d", attempt+1)
-			break
-		}
-
-		attempt++
-		if attempt > c.ReconMaxAttempts {
-			// mb panic?
-			return errors.New("cannot connect to master node")
-		}
-
-		// wait before reconnect
-		time.Sleep(backoff(attempt, c.ReconMaxWait))
-	}
-
-	// TODO send auth with MasterKey hash
-	// receive AUTH_OK
-
-	return nil
-
-}
-
-func (c *MasterConn) GetDump() ([]byte, error) {
-	c.Lock()
-	if !c.IsConnected {
-		c.Unlock()
-		return nil, errors.New("not connected")
-	}
-	err := SendMsg(c.Conn, msg)
-	resp, err := ReceiveMsg(c.Conn, timeout)
-	c.Unlock()
-	//asdsa
-
-}
-*/
-
-/////////////////////
-
-/*
-// previous version
-func (c *SlaveConn) ConnectMaster() {
-    go func() {
-        attempt := 1
-        for {
-            err := c.connect()
-            if err == nil {
-
-                // TODO replace with logger
-                fmt.Printf("connection to master node established, attempts: %d", attempt)
-
-                break
-            }
-            // wait before reconnect
-            time.Sleep(backoff(attempt, c.ReconMaxWait))
-            attempt++
-        }
-
-        // TODO send auth with MasterKey
-        // receive AUTH_OK
-
-    }()
-}
-*/
 
 func handleSlaveConn(conn net.Conn, r *Replicator) {
 	// auth phase
@@ -326,8 +203,7 @@ func ReceiveMsg(conn net.Conn, timeout time.Duration) (ServiceMsg, error) {
 	if err != nil {
 		return ServiceMsg{}, err
 	}
-	// FIXME use LimitReader again for msgType to avoid reallocation
-	//return ServiceMsg{Type: uint8(msgBuff[0]), Payload: msgBuff[1:]}, nil
+
 	return ServiceMsg{Type: msgType, Payload: msgBuff}, nil
 }
 
