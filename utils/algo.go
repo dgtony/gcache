@@ -1,5 +1,9 @@
 package utils
 
+import (
+	"sort"
+)
+
 const (
 	// hashing constants
 	FNV_OFFSET64 = 14695981039346656037
@@ -63,4 +67,18 @@ func FindInSliceString(p string, s []string) bool {
 		}
 	}
 	return false
+}
+
+func CompareStringSlicesUnordered(s1, s2 []string) bool {
+	sort.Strings(s1)
+	sort.Strings(s2)
+	if len(s1) != len(s2) {
+		return false
+	}
+	for i := 0; i < len(s1); i++ {
+		if s1[i] != s2[i] {
+			return false
+		}
+	}
+	return true
 }
