@@ -169,6 +169,7 @@ func (r *Replicator) runDumpPuller(conn net.Conn, pullDumpPeriod time.Duration) 
 				if !reconFlag {
 					// try to reconnect
 					reconFlag = true
+					logger.Warning("master node connection lost, reconnecting...")
 					conn = ConnectMaster(r.MasterAddr, CONN_TIMEOUT, r.MasterSecretHash)
 					continue
 				} else {

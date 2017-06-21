@@ -215,7 +215,8 @@ func getTestConfig(numShards int, routePrefix string) *utils.Config {
 func startTestServer(conf *utils.Config) *http.Server {
 	utils.SetupLoggers(conf)
 	_, store := replicator.RunReplicator(conf)
-	return StartClientREST(conf, store)
+	stopCh := make(chan struct{})
+	return StartClientREST(conf, store, stopCh)
 }
 
 // return status code, raw body and error

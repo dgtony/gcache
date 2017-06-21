@@ -11,7 +11,7 @@ import (
 
 var logger *logging.Logger
 
-func StartClientREST(conf *utils.Config, store *storage.ConcurrentMap) *http.Server {
+func StartClientREST(conf *utils.Config, store *storage.ConcurrentMap, stopCh chan struct{}) *http.Server {
 	logger = utils.GetLogger("REST")
 
 	serverAddr := net.JoinHostPort(conf.ClientHTTP.Addr, conf.ClientHTTP.Port)
@@ -27,6 +27,7 @@ func StartClientREST(conf *utils.Config, store *storage.ConcurrentMap) *http.Ser
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
 			logger.Warningf("client stopped, reason: %s", err)
+			stopCh <- struct{}{}
 		}
 	}()
 
