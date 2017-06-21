@@ -49,11 +49,12 @@ var routes = Routes{
 
 func supplementRoute(route string, conf *utils.Config) string {
 	var elems []string
-	trimmedRoute := strings.TrimSpace(route)
-	if len(trimmedRoute) == 0 || trimmedRoute == "/" {
-		elems = []string{"", conf.ClientHTTP.RoutePrefix}
+	safeRoute := strings.TrimSpace(route)
+	safePrefix := strings.TrimSpace(conf.ClientHTTP.RoutePrefix)
+	if len(safeRoute) == 0 || safeRoute == "/" {
+		elems = []string{"", safePrefix}
 	} else {
-		elems = []string{"", conf.ClientHTTP.RoutePrefix, trimmedRoute}
+		elems = []string{"", safePrefix, safeRoute}
 	}
 	return strings.Join(elems, "/")
 }

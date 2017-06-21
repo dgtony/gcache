@@ -23,9 +23,10 @@ type StringSliceTestCase struct {
 func TestUtilsAlgoPower(t *testing.T) {
 	testCases := [][]int{
 		[]int{0, 0, 1},
-		[]int{0, 1, 0},
+		[]int{0, 1, 1},
 		[]int{-1, 0, 1},
-		[]int{1, -1, 0},
+		[]int{-1, 23, 1},
+		[]int{1, -1, 1},
 		[]int{1, 0, 1},
 		[]int{1, 300, 1},
 		[]int{2, 2, 4},
