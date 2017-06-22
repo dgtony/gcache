@@ -49,6 +49,8 @@ func NewExpireQueue() ExpireQueue {
 }
 
 func (q *ExpireQueue) InsertKey(key string, ttl time.Duration) {
+	// clean key expiration in case of update
+	q.removeExisting(key)
 	keyExpiration := time.Now().Add(ttl).UnixNano()
 	item := &StorageKey{Key: key, Expire: keyExpiration}
 	heap.Push(q, item)
@@ -81,4 +83,17 @@ func (q *ExpireQueue) GetExpiredKeys() (bool, []string) {
 		return true, expiredKeys
 	}
 	return false, nil
+}
+
+func (q *ExpireQueue) removeExisting(key string) {
+	qp := *q
+	for i := range qp {
+		if qp[i].Key == key {
+			// remove key
+			copy(qp[i:], qp[i+1:])
+			qp[len(qp)-1] = nil
+			qp = qp[:len(qp)-1]
+			return
+		}
+	}
 }
