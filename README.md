@@ -86,12 +86,12 @@ One can adjust data inconsistency window with `dump_update_period` parameter in 
 
 ### REST API
 
-GCache provides REST API as a standard server access interface. Swagger-powered API specification could be found [here](docs/rest_api.html).
+GCache provides REST API as a standard server access interface. Swagger-powered API specification could be found in file `docs/rest_api.html`.
 
 
 ### Native clients
 
-At the moment the only existing native client is *gclient*: thin library written in Go. More information about library and usage examples could be found in the project [repository](https://github.com/dgtony/gclient).
+At the moment the only existing native client is *gclient* – thin library written in Go. More information about library and usage examples could be found in the project [repository](https://github.com/dgtony/gclient).
 
 
 ### TODO
