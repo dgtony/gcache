@@ -14,10 +14,6 @@ const (
 /* request handlers */
 
 func ResourceNotFound(w http.ResponseWriter, r *http.Request) {
-
-	// TODO remove
-	logger.Debugf("bad request: %s %s", r.Method, r.RequestURI)
-
 	var response = ErrorResponse{
 		Code:   ERR_CODE_ENDPOINT_NOT_FOUND,
 		Reason: "endpoint not found"}
@@ -32,9 +28,6 @@ func GetItemHandler(w http.ResponseWriter, r *http.Request) {
 		sendErrorResponse(w, http.StatusBadRequest, ERR_CODE_BAD_REQ, "cannot decode request")
 		return
 	}
-
-	// TODO remove
-	logger.Debugf("get item: %+v", req)
 
 	// validate
 	if req.Key == "" {
@@ -78,9 +71,6 @@ func SetItemHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO remove
-	logger.Debugf("set item: %+v", req)
-
 	// validate
 	if req.Key == "" {
 		sendErrorResponse(w, http.StatusBadRequest, ERR_CODE_NO_KEY_PROVIDED, "no key provided")
@@ -107,9 +97,6 @@ func RemoveItemHandler(w http.ResponseWriter, r *http.Request) {
 		sendErrorResponse(w, http.StatusBadRequest, ERR_CODE_BAD_REQ, "cannot decode request")
 		return
 	}
-
-	// TODO remove
-	logger.Debugf("remove item: %+v", req)
 
 	// validate
 	if req.Key == "" {
