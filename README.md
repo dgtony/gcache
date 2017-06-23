@@ -94,6 +94,11 @@ GCache provides REST API as a standard server access interface. Swagger-powered 
 At the moment the only existing native client is *gclient* – thin library written in Go. More information about library and usage examples could be found in the project [repository](https://github.com/dgtony/gclient).
 
 
+### Benchmarks
+
+Results of benchmarking GCache via REST API could be found [here](docs/rest_bench.md).
+
+
 ### TODO
 
 Project just started, and there are a lot of things to be done. Among others:
