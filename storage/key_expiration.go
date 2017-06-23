@@ -93,6 +93,7 @@ func (q *ExpireQueue) removeExisting(key string) {
 			copy(qp[i:], qp[i+1:])
 			qp[len(qp)-1] = nil
 			qp = qp[:len(qp)-1]
+			*q = qp
 			return
 		}
 	}
