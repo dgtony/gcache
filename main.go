@@ -7,7 +7,7 @@ import (
 	"github.com/dgtony/gcache/replicator"
 	"github.com/dgtony/gcache/utils"
 	"github.com/op/go-logging"
-	// for debug
+	// profiling
 	//"net/http"
 	//_ "net/http/pprof"
 )
@@ -43,6 +43,9 @@ func main() {
 	stopCh := make(chan struct{})
 	// run clients
 	_ = client_rest.StartClientREST(config, store, stopCh)
+
+	// profiling
+	//go http.ListenAndServe("0.0.0.0:7878", nil)
 
 	// wait for all clients to stop
 	<-stopCh
