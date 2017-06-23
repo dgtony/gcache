@@ -45,11 +45,12 @@ func (q *ExpireQueue) Pop() interface{} {
 /* queue methods */
 
 func NewExpireQueue() ExpireQueue {
-	return make([]*StorageKey, 0)
+	q := make(ExpireQueue, 0)
+	heap.Init(&q)
+	return q
 }
 
 func (q *ExpireQueue) InsertKey(key string, ttl time.Duration) {
-	// clean key expiration in case of update
 	q.removeExisting(key)
 	keyExpiration := time.Now().Add(ttl).UnixNano()
 	item := &StorageKey{Key: key, Expire: keyExpiration}
@@ -85,6 +86,7 @@ func (q *ExpireQueue) GetExpiredKeys() (bool, []string) {
 	return false, nil
 }
 
+// clean previous key expiration in case of key update
 func (q *ExpireQueue) removeExisting(key string) {
 	qp := *q
 	for i := range qp {
@@ -93,8 +95,8 @@ func (q *ExpireQueue) removeExisting(key string) {
 			copy(qp[i:], qp[i+1:])
 			qp[len(qp)-1] = nil
 			qp = qp[:len(qp)-1]
-			*q = qp
-			return
+			break
 		}
 	}
+	*q = qp
 }
